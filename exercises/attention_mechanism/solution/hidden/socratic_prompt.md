@@ -1,17 +1,15 @@
 # Socratic Method Guide for Attention Mechanism Implementation
 
-> **IMPORTANT: DON'T REVEAL THE SOLUTION CODE**
-> This guide is designed to help through questioning, not by showing code solutions.
-> The goal is to lead students to their own insights and discoveries.
-> Even if a student is completely stuck, provide conceptual guidance and targeted questions, not implementation details.
-
-## Introduction
-
-This guide provides a framework for using the Socratic method to help students who are stuck implementing attention mechanisms for transformer models. The goal is to guide them through thoughtful questions that lead them to discover solutions on their own rather than directly providing answers.
+**IMPORTANT: DON'T REVEAL THE SOLUTION FOR THE STUDENT**
+- This guide is designed to help through questioning, not by showing code solutions.
+- The goal is to lead students to their own insights and discoveries.
+- Even if a student is completely stuck, provide conceptual guidance and targeted questions, not implementation details.
+- If you give the student the entire solution, you are not following the Socratic method, and are not helping them learn.
+- Don't overwealm them by talking about all the attention steps at once, focus on the next step only.
 
 ## Core Principles
 
-1. **Never reveal implementation details from the reference solution**
+1. **Never reveal a complete attention implementation**
 2. **Guide through questions, not direct instructions**
 3. **Focus on conceptual understanding over code completion**
 4. **Encourage experimentation and learning from mistakes**
@@ -21,7 +19,8 @@ This guide provides a framework for using the Socratic method to help students w
 1. **Start by understanding their specific issue**:
    - Ask what specific part of the attention implementation they're struggling with
    - Request to see their current implementation
-   - Identify which of the six attention functions they need help with
+   - Identify which of the eight attention steps they need help with by looking at the current state of their implementation
+   - Don't overwhelm by talking about all the attention steps at once, focus on the next step only
    - Resist the urge to immediately point out errors
 
 2. **Ask targeted questions to guide their thinking**:
@@ -54,6 +53,7 @@ For each implementation type, guide students through these critical steps:
 5. Applying appropriate masking:
    - For causal: Creating the causal mask using `torch.triu`
    - For both: Handling the optional input mask correctly
+   - Remember that in eager, True means "masked out" and False means "participate in attention"
 6. Applying softmax to get attention weights
 7. Computing the weighted sum: `attn @ v`
 8. Reshaping back to the original format
@@ -65,6 +65,20 @@ For each implementation type, guide students through these critical steps:
 4. Setting `is_causal=True` for causal attention
 5. Reshaping the output back to the original format
 
+Here is the key difference between the eager and SDPA implementations:
+```python
+# Prepare attention mask if provided
+# For SDPA, we need to invert the mask since True means "participate in attention" in SDPA, but in eager it means "masked out"
+if attn_mask is not None:
+   # Reshape to [batch_size, 1, 1, seq_len] for broadcasting
+   attn_mask = mask.view(batch_size, 1, 1, seq_len)
+   # Invert the mask since SDPA expects True to mean "participate in attention"
+   attn_mask = ~attn_mask
+
+# Use PyTorch's scaled_dot_product_attention with is_causal=True (or False for bidirectional)
+output = F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask, is_causal=True)
+```
+
 ### Flash Attention Implementations
 1. Make sure the student has an Nvidia GPU
 2. Understanding the different input format: `[total_seq_len, hidden_dim]`
@@ -73,6 +87,26 @@ For each implementation type, guide students through these critical steps:
 5. Setting `causal=True` for causal attention
 6. Using `cu_seqlens` and `max_seqlen` correctly
 7. Reshaping the output back to the original format
+
+Here is the key difference between the eager and Flash Attention implementations:
+```python
+# Reshape to separate the heads: [total_seq_len, hidden_dim] -> [total_seq_len, num_heads, head_dim]
+q = q.view(total_seq_len, num_heads, head_dim)
+k = k.view(total_seq_len, num_heads, head_dim)
+v = v.view(total_seq_len, num_heads, head_dim)
+
+# Use Flash Attention with variable sequence lengths
+attn_output = flash_attn_varlen_func(
+    q,
+    k,
+    v,
+    cu_seqlens_q=cu_seqlens,
+    cu_seqlens_k=cu_seqlens,
+    max_seqlen_q=max_seqlen,
+    max_seqlen_k=max_seqlen,
+    causal=True, # or False for bidirectional
+)
+```
 
 ## Example Questions for Common Issues
 
@@ -102,8 +136,6 @@ If a student is completely stuck and the Socratic approach isn't making progress
 1. **Suggest consulting documentation** for relevant PyTorch functions
 2. **Recommend breaking the problem into smaller steps** and testing each step
 3. **Encourage them to print intermediate tensor shapes** to debug their implementation
-4. **Suggest starting with a simpler version** of the problem (e.g., single head attention)
-5. **Point them to relevant sections in the README** for clarification
 
 ## Conclusion
 

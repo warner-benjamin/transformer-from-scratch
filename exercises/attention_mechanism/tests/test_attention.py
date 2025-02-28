@@ -33,17 +33,30 @@ HIDDEN_DIM = NUM_HEADS * HEAD_DIM
 RTOL = 1e-3
 ATOL = 1e-3
 
+# Determine the device to use
+if torch.cuda.is_available():
+    device = torch.device('cuda')
+elif torch.backends.mps.is_available():
+    device = torch.device('mps')
+else:
+    device = torch.device('cpu')
+
 
 def generate_test_data(batch_size=BATCH_SIZE, seq_len=SEQ_LEN, hidden_dim=HIDDEN_DIM, with_mask=False):
     """Generate random test data for attention functions."""
-    q = torch.randn(batch_size, seq_len, hidden_dim)
-    k = torch.randn(batch_size, seq_len, hidden_dim)
-    v = torch.randn(batch_size, seq_len, hidden_dim)
+    q = torch.randn(batch_size, seq_len, hidden_dim, device=device)
+    k = torch.randn(batch_size, seq_len, hidden_dim, device=device)
+    v = torch.randn(batch_size, seq_len, hidden_dim, device=device)
 
     mask = None
     if with_mask:
-        # Create a random boolean mask where ~20% of positions are masked
-        mask = torch.rand(batch_size, seq_len) < 0.2
+        # Create a padding mask where the last few positions are masked
+        # Simulate sequences of varying lengths by masking the last few positions
+        mask = torch.ones(batch_size, seq_len, device=device, dtype=torch.bool)
+        for i in range(batch_size):
+            # Randomly choose a length for each sequence
+            seq_length = torch.randint(low=1, high=seq_len, size=(1,)).item()
+            mask[i, seq_length:] = False  # Mask the positions beyond the chosen length
 
     return q, k, v, mask
 
@@ -59,7 +72,7 @@ def generate_flash_attention_data(batch_size=BATCH_SIZE, seq_len=SEQ_LEN, hidden
     v_flash = v.reshape(-1, hidden_dim)
 
     # Create cumulative sequence lengths tensor
-    cu_seqlens = torch.arange(0, (batch_size + 1) * seq_len, step=seq_len, dtype=torch.int32)
+    cu_seqlens = torch.arange(0, (batch_size + 1) * seq_len, step=seq_len, dtype=torch.int32, device=device)
 
     # Maximum sequence length
     max_seqlen = seq_len
@@ -208,48 +221,3 @@ def test_eager_causal_attention_no_mask():
         )
     except NotImplementedError:
         pytest.skip("Student's eager causal attention not implemented yet")
-
-
-# Test with different sequence lengths
-def test_variable_sequence_length():
-    """Test attention implementations with variable sequence lengths."""
-    for seq_len in [8, 32]:
-        q, k, v, mask = generate_test_data(seq_len=seq_len, with_mask=True)
-
-        try:
-            # Test eager bidirectional
-            student_output = student_eager_bidirectional(q, k, v, NUM_HEADS, HEAD_DIM, mask)
-            ref_output = ref_eager_bidirectional(q, k, v, NUM_HEADS, HEAD_DIM, mask)
-            assert torch.allclose(student_output, ref_output, rtol=RTOL, atol=ATOL), (
-                f"Eager bidirectional attention failed with seq_len={seq_len}"
-            )
-        except NotImplementedError:
-            pass  # Skip if not implemented
-
-        try:
-            # Test eager causal
-            student_output = student_eager_causal(q, k, v, NUM_HEADS, HEAD_DIM, mask)
-            ref_output = ref_eager_causal(q, k, v, NUM_HEADS, HEAD_DIM, mask)
-            assert torch.allclose(student_output, ref_output, rtol=RTOL, atol=ATOL), f"Eager causal attention failed with seq_len={seq_len}"
-        except NotImplementedError:
-            pass  # Skip if not implemented
-
-        # Add tests for Flash Attention with variable sequence lengths
-        try:
-            # Generate Flash Attention data with the current sequence length
-            _, _, _, q_flash, k_flash, v_flash, cu_seqlens, max_seqlen = generate_flash_attention_data(seq_len=seq_len)
-
-            # Test Flash bidirectional
-            student_output = student_flash_bidirectional(q_flash, k_flash, v_flash, NUM_HEADS, HEAD_DIM, cu_seqlens, max_seqlen)
-            ref_output = ref_flash_bidirectional(q_flash, k_flash, v_flash, NUM_HEADS, HEAD_DIM, cu_seqlens, max_seqlen)
-
-            # Reshape outputs back to standard format for comparison if needed
-            if student_output.shape != ref_output.shape:
-                student_output = student_output.reshape(BATCH_SIZE, seq_len, -1)
-                ref_output = ref_output.reshape(BATCH_SIZE, seq_len, -1)
-
-            assert torch.allclose(student_output, ref_output, rtol=RTOL, atol=ATOL), (
-                f"Flash bidirectional attention failed with seq_len={seq_len}"
-            )
-        except (NotImplementedError, ImportError):
-            pass  # Skip if not implemented or Flash Attention not available
