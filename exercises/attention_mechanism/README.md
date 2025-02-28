@@ -86,6 +86,6 @@ The tests will compare your implementation against a reference implementation. I
 - The mask is a boolean tensor of shape `[batch_size, sequence_length]` where `True` indicates masked positions.
 - For causal attention, don't forget to create the causal mask.
 - For Flash Attention implementations, you'll need to use the `cu_seqlens` and `max_seqlen` parameters instead of masks.
-- Flash Attention is an optimized implementation that may not be available on all hardware.
+- Flash Attention only works on Ampere or newer Nvidia GPUs.
 
 Good luck!
