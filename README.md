@@ -10,6 +10,14 @@ This repository is a companion to my *Create a Transformer From Scratch* series,
 
 > **Note:** The reference implementations are generally available in `solution` folders, but you are strongly encouraged to implement the solutions yourself before looking at them. The learning happens in the struggle!
 
+## How to Use this Repository
+
+After installing (see the [Getting Started](#getting-started) section below), work your way through the exercises in order. Each exercise has its own README with instructions.
+
+Make sure to turn off any code completion tools (e.g. Copilot or Cursor autocomplete) as they will likely be able to solve the exercises for you.
+
+If you get stuck, each exercise has a Socratic prompt to paste into [ChatGPT](https://chatgpt.com) or [Claude](https://claude.ai). These prompts should instruct ChatGPT or Claude to guide you through the problem, rather than give you the solution outright.
+
 ## Getting Started
 
 This project uses [uv](https://docs.astral.sh/uv/) to manage dependencies (uv is compatible with Conda environments, see the [GPU](#gpu) section for an example of how to integrate the two). First clone the repository.

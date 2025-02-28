@@ -33,7 +33,7 @@ $$
 
 ## If You Get Stuck
 
-If you are stuck, you can prompt your [ChatGPT](https://chatgpt.com) or [Claude](https://claude.ai) with the [Socratic Prompt](socratic_prompt.md) to help you complete this exercise (don't read it yourself, though). This prompt should instruct the ChatGPT or Claude to guide you through the problem, rather than give you the solution outright.
+If you are stuck, you can prompt your [ChatGPT](https://chatgpt.com) or [Claude](https://claude.ai) with the [Socratic Prompt](socratic_prompt.md) to help you complete this exercise (don't read it yourself, though). This prompt should instruct ChatGPT or Claude to guide you through the problem, rather than give you the solution outright.
 
 Don't use Sonnet 3.7, it has a tendency to ignore the Socratic prompt and give you the entire solution. Use Sonnet 3.5, GPT-4o, or o3-mini instead.
 
