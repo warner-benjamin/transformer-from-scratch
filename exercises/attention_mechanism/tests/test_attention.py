@@ -35,11 +35,11 @@ ATOL = 1e-3
 
 # Determine the device to use
 if torch.cuda.is_available():
-    device = torch.device('cuda')
+    device = torch.device("cuda")
 elif torch.backends.mps.is_available():
-    device = torch.device('mps')
+    device = torch.device("mps")
 else:
-    device = torch.device('cpu')
+    device = torch.device("cpu")
 
 
 def generate_test_data(batch_size=BATCH_SIZE, seq_len=SEQ_LEN, hidden_dim=HIDDEN_DIM, with_mask=False):
@@ -52,11 +52,11 @@ def generate_test_data(batch_size=BATCH_SIZE, seq_len=SEQ_LEN, hidden_dim=HIDDEN
     if with_mask:
         # Create a padding mask where the last few positions are masked
         # Simulate sequences of varying lengths by masking the last few positions
-        mask = torch.ones(batch_size, seq_len, device=device, dtype=torch.bool)
+        mask = torch.zeros(batch_size, seq_len, device=device, dtype=torch.bool)
         for i in range(batch_size):
             # Randomly choose a length for each sequence
             seq_length = torch.randint(low=1, high=seq_len, size=(1,)).item()
-            mask[i, seq_length:] = False  # Mask the positions beyond the chosen length
+            mask[i, seq_length:] = True  # Mask the positions beyond the chosen length
 
     return q, k, v, mask
 
