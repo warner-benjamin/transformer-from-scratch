@@ -64,6 +64,10 @@ uv sync --extra gpu --extra flash --no-cache
 uv sync
 ```
 
+### Notebooks
+
+If you want to use a notebook to work through the exercises, you can install VSCode notebook, Jupyter Lab, and NBClassic support by adding the `--extra notebook` flag to your final uv sync command.
+
 ### Tests
 
 After installing, you can run the tests to make sure everything is working.
