@@ -1,9 +1,9 @@
-from __future__ import annotations
+import math
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch import Tensor, BoolTensor
+from torch import BoolTensor, Tensor
 
 # Try to import Flash Attention
 FLASH_ATTN_AVAILABLE = False
@@ -22,7 +22,7 @@ def eager_bidirectional_attention(
     v: Tensor,  # shape: [batch_size, sequence_length, hidden_dim]
     num_heads: int,  # number of attention heads
     head_dim: int,  # dimension of each attention head
-    mask: BoolTensor | None = None,  # shape: [batch_size, sequence_length] where True indicates masked positions
+    mask: BoolTensor | None = None,  # shape: [batch_size, sequence_length] where True indicates attended positions
 ) -> Tensor:
     """
     Implement bidirectional (full) attention using only PyTorch operations.
@@ -34,7 +34,7 @@ def eager_bidirectional_attention(
         num_heads: Number of attention heads
         head_dim: Dimension of each attention head
         mask: Optional boolean mask of shape [batch_size, sequence_length]
-              where True indicates masked positions
+              where True indicates attended tokens and False masked positions
 
     Returns:
         Output tensor of shape [batch_size, sequence_length, hidden_dim]
@@ -43,7 +43,8 @@ def eager_bidirectional_attention(
 
     Note:
         You need to reshape the inputs to separate the heads, perform the
-        attention computation, and then merge the heads back.
+        attention computation, and then merge the heads back. You might need
+        to invert the attention mask for the softmax to attend correctly.
     """
     raise NotImplementedError("Implement bidirectional attention using PyTorch operations")
 
@@ -54,7 +55,7 @@ def eager_causal_attention(
     v: Tensor,  # shape: [batch_size, sequence_length, hidden_dim]
     num_heads: int,  # number of attention heads
     head_dim: int,  # dimension of each attention head
-    mask: BoolTensor | None = None,  # shape: [batch_size, sequence_length] where True indicates masked positions
+    mask: BoolTensor | None = None,  # shape: [batch_size, sequence_length] where True indicates attended positions
 ) -> Tensor:
     """
     Implement causal (masked) attention using only PyTorch operations.
@@ -66,7 +67,7 @@ def eager_causal_attention(
         num_heads: Number of attention heads
         head_dim: Dimension of each attention head
         mask: Optional boolean mask of shape [batch_size, sequence_length]
-              where True indicates masked positions
+              where True indicates attended tokens and False masked positions
 
     Returns:
         Output tensor of shape [batch_size, sequence_length, hidden_dim]
@@ -75,17 +76,18 @@ def eager_causal_attention(
 
     Note:
         A causal mask ensures that a position i can only attend to positions j ≤ i.
+        You might need to invert the attention mask for the softmax to attend correctly.
     """
     raise NotImplementedError("Implement causal attention using PyTorch operations")
 
 
-def sdp_bidirectional_attention(
+def sdpa_bidirectional_attention(
     q: Tensor,  # shape: [batch_size, sequence_length, hidden_dim]
     k: Tensor,  # shape: [batch_size, sequence_length, hidden_dim]
     v: Tensor,  # shape: [batch_size, sequence_length, hidden_dim]
     num_heads: int,  # number of attention heads
     head_dim: int,  # dimension of each attention head
-    mask: BoolTensor | None = None,  # shape: [batch_size, sequence_length] where True indicates masked positions
+    mask: BoolTensor | None = None,  # shape: [batch_size, sequence_length] where True indicates attended positions
 ) -> Tensor:
     """
     Implement bidirectional (full) attention using PyTorch's scaled_dot_product_attention.
@@ -97,28 +99,23 @@ def sdp_bidirectional_attention(
         num_heads: Number of attention heads
         head_dim: Dimension of each attention head
         mask: Optional boolean mask of shape [batch_size, sequence_length]
-              where True indicates masked positions
+              where True indicates attended tokens and False masked positions
 
     Returns:
         Output tensor of shape [batch_size, sequence_length, hidden_dim]
         This is the result after the attention computation but before
         the final linear projection.
-
-    Note:
-        Note that there's a difference in mask interpretation between our interface and
-        PyTorch's SDPA function. In our interface, True means "masked out", while in
-        PyTorch's SDPA, True means "participate in attention".
     """
     raise NotImplementedError("Implement bidirectional attention using PyTorch's SDPA")
 
 
-def sdp_causal_attention(
+def sdpa_causal_attention(
     q: Tensor,  # shape: [batch_size, sequence_length, hidden_dim]
     k: Tensor,  # shape: [batch_size, sequence_length, hidden_dim]
     v: Tensor,  # shape: [batch_size, sequence_length, hidden_dim]
     num_heads: int,  # number of attention heads
     head_dim: int,  # dimension of each attention head
-    mask: BoolTensor | None = None,  # shape: [batch_size, sequence_length] where True indicates masked positions
+    mask: BoolTensor | None = None,  # shape: [batch_size, sequence_length] where True indicates attended positions
 ) -> Tensor:
     """
     Implement causal (masked) attention using PyTorch's scaled_dot_product_attention.
@@ -130,7 +127,7 @@ def sdp_causal_attention(
         num_heads: Number of attention heads
         head_dim: Dimension of each attention head
         mask: Optional boolean mask of shape [batch_size, sequence_length]
-              where True indicates masked positions
+              where True indicates attended tokens and False masked positions
 
     Returns:
         Output tensor of shape [batch_size, sequence_length, hidden_dim]
@@ -138,10 +135,6 @@ def sdp_causal_attention(
         the final linear projection.
 
     Note:
-        Note that there's a difference in mask interpretation between our interface and
-        PyTorch's SDPA function. In our interface, True means "masked out", while in
-        PyTorch's SDPA, True means "participate in attention".
-
         You can use the `is_causal` argument to enable causal masking instead of
         creating a causal mask.
     """

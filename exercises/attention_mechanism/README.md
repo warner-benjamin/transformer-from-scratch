@@ -47,9 +47,13 @@ Do not apply any attention dropout.
 
 For the eager implementations, you need to manually compute the entire attention mechanism.
 
+Remember that the attention mask is True for tokens that should be attended to and False for tokens which should be masked out, so depending on your implementation you will probably need to invert the mask.
+
 ### SDPA Implementations
 
 For these implementations, you'll use PyTorch's [`scaled_dot_product_attention`](https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html) function, which provides an optimized implementation of the attention mechanism.
+
+If passed a boolean attention mask, SDPA expects True means "participate in attention" and False means "masked out", which matches our attention mask.
 
 ### Flash Attention Implementations
 
@@ -67,8 +71,8 @@ Your implementation should:
 ### Mask Interpretation
 
 Be aware that there's a difference in how masks are interpreted:
-- In our interface, `True` in the mask means "masked out" (don't attend to this position).
-- In PyTorch's SDPA, `True` means "participate in attention" (do attend to this position).
+- In our interface, `False` in the mask means "masked out" (don't attend to this position).
+    - This makes intuitive sense (attend to True, don't attend to False), but adds potential additional step of inverting the mask.
 - In Flash Attention, we use `cu_seqlens` and `max_seqlen` instead of an attention mask.
 
 ## Testing Your Implementation

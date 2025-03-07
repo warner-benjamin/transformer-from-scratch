@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import math
 import torch
 import torch.nn.functional as F
@@ -34,7 +32,7 @@ def eager_bidirectional_attention(
         num_heads: Number of attention heads
         head_dim: Dimension of each attention head
         mask: Optional boolean mask of shape [batch_size, sequence_length]
-              where True indicates masked positions
+              where True indicates attended tokens and False masked positions
 
     Returns:
         Output tensor of shape [batch_size, sequence_length, hidden_dim]
@@ -44,9 +42,9 @@ def eager_bidirectional_attention(
 
     # Reshape to separate the heads
     # [batch_size, seq_len, hidden_dim] -> [batch_size, seq_len, num_heads, head_dim]
-    q = q.reshape(batch_size, seq_len, num_heads, head_dim)
-    k = k.reshape(batch_size, seq_len, num_heads, head_dim)
-    v = v.reshape(batch_size, seq_len, num_heads, head_dim)
+    q = q.view(batch_size, seq_len, num_heads, head_dim)
+    k = k.view(batch_size, seq_len, num_heads, head_dim)
+    v = v.view(batch_size, seq_len, num_heads, head_dim)
 
     # Transpose to get [batch_size, num_heads, seq_len, head_dim]
     q = q.transpose(1, 2)
@@ -62,7 +60,8 @@ def eager_bidirectional_attention(
     # Apply mask if provided
     if mask is not None:
         # Reshape mask to [batch_size, 1, 1, seq_len]
-        mask = mask.view(batch_size, 1, 1, seq_len)
+        # And invert since we want to mask out the positions where it is False
+        mask = ~mask.view(batch_size, 1, 1, seq_len)
         attn = attn.masked_fill(mask, float("-inf"))
 
     # Apply softmax to get attention weights
@@ -97,7 +96,7 @@ def eager_causal_attention(
         num_heads: Number of attention heads
         head_dim: Dimension of each attention head
         mask: Optional boolean mask of shape [batch_size, sequence_length]
-              where True indicates masked positions
+              where True indicates attended tokens and False masked positions
 
     Returns:
         Output tensor of shape [batch_size, sequence_length, hidden_dim]
@@ -107,9 +106,9 @@ def eager_causal_attention(
 
     # Reshape to separate the heads
     # [batch_size, seq_len, hidden_dim] -> [batch_size, seq_len, num_heads, head_dim]
-    q = q.reshape(batch_size, seq_len, num_heads, head_dim)
-    k = k.reshape(batch_size, seq_len, num_heads, head_dim)
-    v = v.reshape(batch_size, seq_len, num_heads, head_dim)
+    q = q.view(batch_size, seq_len, num_heads, head_dim)
+    k = k.view(batch_size, seq_len, num_heads, head_dim)
+    v = v.view(batch_size, seq_len, num_heads, head_dim)
 
     # Transpose to get [batch_size, num_heads, seq_len, head_dim]
     q = q.transpose(1, 2)
@@ -122,16 +121,17 @@ def eager_causal_attention(
     # Scale by square root of head dimension
     attn = attn / math.sqrt(head_dim)
 
-    # Create causal mask (upper triangular)
+    # Create causal mask (upper triangular), here true means mask out the position so we don't need to invert it
     causal_mask = torch.triu(torch.ones(seq_len, seq_len, dtype=torch.bool, device=q.device), diagonal=1).view(1, 1, seq_len, seq_len)
 
-    # Apply causal mask
+    # Apply the causal mask, we don't need to invert it since we mask out positions where it's true
     attn = attn.masked_fill(causal_mask, float("-inf"))
 
     # Apply additional mask if provided
     if mask is not None:
         # Reshape mask to [batch_size, 1, 1, seq_len]
-        mask = mask.view(batch_size, 1, 1, seq_len)
+        # And invert since we want to mask out the positions where it is False
+        mask = ~mask.view(batch_size, 1, 1, seq_len)
         attn = attn.masked_fill(mask, float("-inf"))
 
     # Apply softmax to get attention weights
@@ -148,7 +148,7 @@ def eager_causal_attention(
     return output
 
 
-def sdp_bidirectional_attention(
+def sdpa_bidirectional_attention(
     q: Tensor,
     k: Tensor,
     v: Tensor,
@@ -166,7 +166,7 @@ def sdp_bidirectional_attention(
         num_heads: Number of attention heads
         head_dim: Dimension of each attention head
         mask: Optional boolean mask of shape [batch_size, sequence_length]
-              where True indicates masked positions
+              where True indicates attended tokens and False masked positions
 
     Returns:
         Output tensor of shape [batch_size, sequence_length, hidden_dim]
@@ -176,9 +176,9 @@ def sdp_bidirectional_attention(
 
     # Reshape to separate the heads
     # [batch_size, seq_len, hidden_dim] -> [batch_size, seq_len, num_heads, head_dim]
-    q = q.reshape(batch_size, seq_len, num_heads, head_dim)
-    k = k.reshape(batch_size, seq_len, num_heads, head_dim)
-    v = v.reshape(batch_size, seq_len, num_heads, head_dim)
+    q = q.view(batch_size, seq_len, num_heads, head_dim)
+    k = k.view(batch_size, seq_len, num_heads, head_dim)
+    v = v.view(batch_size, seq_len, num_heads, head_dim)
 
     # Transpose to get [batch_size, num_heads, seq_len, head_dim]
     q = q.transpose(1, 2)
@@ -186,25 +186,21 @@ def sdp_bidirectional_attention(
     v = v.transpose(1, 2)
 
     # Prepare attention mask if provided
-    # For SDPA, we need to invert the mask since True means "participate in attention"
-    # in SDPA, but in our interface True means "masked out"
     attn_mask = None
     if mask is not None:
         # Reshape to [batch_size, 1, 1, seq_len] for broadcasting
         attn_mask = mask.view(batch_size, 1, 1, seq_len)
-        # Invert the mask since SDPA expects True to mean "participate in attention"
-        attn_mask = ~attn_mask
 
     # Use PyTorch's scaled_dot_product_attention
     output = F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask, dropout_p=0.0, is_causal=False)
 
     # Transpose and reshape back to [batch_size, seq_len, hidden_dim]
-    output = output.transpose(1, 2).reshape(batch_size, seq_len, hidden_dim)
+    output = output.transpose(1, 2).view(batch_size, seq_len, hidden_dim)
 
     return output
 
 
-def sdp_causal_attention(
+def sdpa_causal_attention(
     q: Tensor,
     k: Tensor,
     v: Tensor,
@@ -222,7 +218,7 @@ def sdp_causal_attention(
         num_heads: Number of attention heads
         head_dim: Dimension of each attention head
         mask: Optional boolean mask of shape [batch_size, sequence_length]
-              where True indicates masked positions
+              where True indicates attended tokens and False masked positions
 
     Returns:
         Output tensor of shape [batch_size, sequence_length, hidden_dim]
@@ -232,9 +228,9 @@ def sdp_causal_attention(
 
     # Reshape to separate the heads
     # [batch_size, seq_len, hidden_dim] -> [batch_size, seq_len, num_heads, head_dim]
-    q = q.reshape(batch_size, seq_len, num_heads, head_dim)
-    k = k.reshape(batch_size, seq_len, num_heads, head_dim)
-    v = v.reshape(batch_size, seq_len, num_heads, head_dim)
+    q = q.view(batch_size, seq_len, num_heads, head_dim)
+    k = k.view(batch_size, seq_len, num_heads, head_dim)
+    v = v.view(batch_size, seq_len, num_heads, head_dim)
 
     # Transpose to get [batch_size, num_heads, seq_len, head_dim]
     q = q.transpose(1, 2)
@@ -242,20 +238,16 @@ def sdp_causal_attention(
     v = v.transpose(1, 2)
 
     # Prepare attention mask if provided
-    # For SDPA, we need to invert the mask since True means "participate in attention"
-    # in SDPA, but in our interface True means "masked out"
     attn_mask = None
     if mask is not None:
         # Reshape to [batch_size, 1, 1, seq_len] for broadcasting
         attn_mask = mask.view(batch_size, 1, 1, seq_len)
-        # Invert the mask since SDPA expects True to mean "participate in attention"
-        attn_mask = ~attn_mask
 
     # Use PyTorch's scaled_dot_product_attention with is_causal=True
     output = F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask, dropout_p=0.0, is_causal=True)
 
     # Transpose and reshape back to [batch_size, seq_len, hidden_dim]
-    output = output.transpose(1, 2).reshape(batch_size, seq_len, hidden_dim)
+    output = output.transpose(1, 2).view(batch_size, seq_len, hidden_dim)
 
     return output
 

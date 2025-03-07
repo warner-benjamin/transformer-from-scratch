@@ -55,7 +55,7 @@ With Cuda/Cuda Toolkit installed, then use uv to install the library:
 uv sync --extra gpu
 
 # Install flash attention if you have a Ampere (RTX 30xx series) or newer GPU
- uv sync --extra gpu --extra flash
+uv sync --extra gpu --extra flash --no-cache
 ```
 
 ### Apple Silicon (macOS)
@@ -73,4 +73,3 @@ pytest
 ```
 
 which should return multiple skipped tests as there are no solutions implemented yet.
-

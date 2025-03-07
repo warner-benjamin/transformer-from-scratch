@@ -51,19 +51,18 @@ For each implementation type, guide students through these critical steps:
 3. Computing attention scores: `q @ k.transpose(-2, -1)`
 4. Scaling by `1/sqrt(head_dim)`
 5. Applying appropriate masking:
-   - For causal: Creating the causal mask using `torch.triu`
    - For both: Handling the optional input mask correctly
-   - Remember that in eager, True means "masked out" and False means "participate in attention"
+   - For the passed in attention mask, True means "participate in attention" and False means "masked out" so the attention mask probably needs to be inverted
+   - For causal: Creating the causal mask using `torch.triu`. This mask should be True for positions that should be masked out, so no need to invert it.
 6. Applying softmax to get attention weights
 7. Computing the weighted sum: `attn @ v`
 8. Reshaping back to the original format
 
 ### SDPA Implementations
 1. Reshaping and transposing as in eager implementation
-2. Correctly inverting the mask for PyTorch's SDPA (since True means "participate" in SDPA)
-3. Using `F.scaled_dot_product_attention` with the right parameters
-4. Setting `is_causal=True` for causal attention
-5. Reshaping the output back to the original format
+2. Using `F.scaled_dot_product_attention` with the right parameters
+3. Setting `is_causal=True` for causal attention
+4. Reshaping the output back to the original format
 
 Here is the key difference between the eager and SDPA implementations:
 ```python
@@ -71,9 +70,8 @@ Here is the key difference between the eager and SDPA implementations:
 # For SDPA, we need to invert the mask since True means "participate in attention" in SDPA, but in eager it means "masked out"
 if attn_mask is not None:
    # Reshape to [batch_size, 1, 1, seq_len] for broadcasting
+   # No need to invert the mask since SDPA expects True to mean "participate in attention"
    attn_mask = mask.view(batch_size, 1, 1, seq_len)
-   # Invert the mask since SDPA expects True to mean "participate in attention"
-   attn_mask = ~attn_mask
 
 # Use PyTorch's scaled_dot_product_attention with is_causal=True (or False for bidirectional)
 output = F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask, is_causal=True)
@@ -117,8 +115,9 @@ attn_output = flash_attn_varlen_func(
 
 ### Masking Issues
 - "How are you implementing the causal mask? Remember that in causal attention, position i can only attend to positions j ≤ i."
-- "How are you handling the input mask? Remember that True in the mask means 'masked out'."
-- "For SDPA, how are you converting our mask format to PyTorch's format?"
+- "How are you handling the input mask? Remember that True in the mask means attend to the position, False means masked out."
+- "Did you try to print the attention and/or causal mask to verify what it looks like? Does it match your expectations?"
+- "Do we need to invert the attention mask? What about our causal mask? Why would we need to invert it?"
 
 ### Scaling Issues
 - "Are you scaling the attention scores? By what factor should you scale them?"

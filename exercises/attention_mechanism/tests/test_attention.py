@@ -5,8 +5,8 @@ import torch
 from attention import (
     eager_bidirectional_attention as student_eager_bidirectional,
     eager_causal_attention as student_eager_causal,
-    sdp_bidirectional_attention as student_sdp_bidirectional,
-    sdp_causal_attention as student_sdp_causal,
+    sdpa_bidirectional_attention as student_sdpa_bidirectional,
+    sdpa_causal_attention as student_sdpa_causal,
     flash_bidirectional_attention as student_flash_bidirectional,
     flash_causal_attention as student_flash_causal,
 )
@@ -15,8 +15,8 @@ from attention import (
 from solution.hidden.reference_attention import (
     eager_bidirectional_attention as ref_eager_bidirectional,
     eager_causal_attention as ref_eager_causal,
-    sdp_bidirectional_attention as ref_sdp_bidirectional,
-    sdp_causal_attention as ref_sdp_causal,
+    sdpa_bidirectional_attention as ref_sdpa_bidirectional,
+    sdpa_causal_attention as ref_sdpa_causal,
     flash_bidirectional_attention as ref_flash_bidirectional,
     flash_causal_attention as ref_flash_causal,
 )
@@ -52,11 +52,11 @@ def generate_test_data(batch_size=BATCH_SIZE, seq_len=SEQ_LEN, hidden_dim=HIDDEN
     if with_mask:
         # Create a padding mask where the last few positions are masked
         # Simulate sequences of varying lengths by masking the last few positions
-        mask = torch.zeros(batch_size, seq_len, device=device, dtype=torch.bool)
+        mask = torch.ones(batch_size, seq_len, device=device, dtype=torch.bool)
         for i in range(batch_size):
             # Randomly choose a length for each sequence
             seq_length = torch.randint(low=1, high=seq_len, size=(1,)).item()
-            mask[i, seq_length:] = True  # Mask the positions beyond the chosen length
+            mask[i, seq_length:] = False  # Mask the positions beyond the chosen length
 
     return q, k, v, mask
 
@@ -80,9 +80,10 @@ def generate_flash_attention_data(batch_size=BATCH_SIZE, seq_len=SEQ_LEN, hidden
     return q, k, v, q_flash, k_flash, v_flash, cu_seqlens, max_seqlen
 
 
-def test_eager_bidirectional_attention():
+@pytest.mark.parametrize("mask", [True, False], ids=lambda x: "with_mask" if x else "no_mask")
+def test_eager_bidirectional_attention(mask: bool):
     """Test student's eager bidirectional attention implementation."""
-    q, k, v, mask = generate_test_data(with_mask=True)
+    q, k, v, mask = generate_test_data(with_mask=mask)
 
     try:
         student_output = student_eager_bidirectional(q, k, v, NUM_HEADS, HEAD_DIM, mask)
@@ -95,9 +96,10 @@ def test_eager_bidirectional_attention():
         pytest.skip("Student's eager bidirectional attention not implemented yet")
 
 
-def test_eager_causal_attention():
+@pytest.mark.parametrize("mask", [True, False], ids=lambda x: "with_mask" if x else "no_mask")
+def test_eager_causal_attention(mask: bool):
     """Test student's eager causal attention implementation."""
-    q, k, v, mask = generate_test_data(with_mask=True)
+    q, k, v, mask = generate_test_data(with_mask=mask)
 
     try:
         student_output = student_eager_causal(q, k, v, NUM_HEADS, HEAD_DIM, mask)
@@ -110,13 +112,14 @@ def test_eager_causal_attention():
         pytest.skip("Student's eager causal attention not implemented yet")
 
 
-def test_sdp_bidirectional_attention():
+@pytest.mark.parametrize("mask", [True, False], ids=lambda x: "with_mask" if x else "no_mask")
+def test_sdpa_bidirectional_attention(mask: bool):
     """Test student's SDPA bidirectional attention implementation."""
-    q, k, v, mask = generate_test_data(with_mask=True)
+    q, k, v, mask = generate_test_data(with_mask=mask)
 
     try:
-        student_output = student_sdp_bidirectional(q, k, v, NUM_HEADS, HEAD_DIM, mask)
-        ref_output = ref_sdp_bidirectional(q, k, v, NUM_HEADS, HEAD_DIM, mask)
+        student_output = student_sdpa_bidirectional(q, k, v, NUM_HEADS, HEAD_DIM, mask)
+        ref_output = ref_sdpa_bidirectional(q, k, v, NUM_HEADS, HEAD_DIM, mask)
 
         assert torch.allclose(student_output, ref_output, rtol=RTOL, atol=ATOL), (
             "Student's SDPA bidirectional attention output doesn't match reference implementation"
@@ -125,13 +128,14 @@ def test_sdp_bidirectional_attention():
         pytest.skip("Student's SDPA bidirectional attention not implemented yet")
 
 
-def test_sdp_causal_attention():
+@pytest.mark.parametrize("mask", [True, False], ids=lambda x: "with_mask" if x else "no_mask")
+def test_sdpa_causal_attention(mask: bool):
     """Test student's SDPA causal attention implementation."""
-    q, k, v, mask = generate_test_data(with_mask=True)
+    q, k, v, mask = generate_test_data(with_mask=mask)
 
     try:
-        student_output = student_sdp_causal(q, k, v, NUM_HEADS, HEAD_DIM, mask)
-        ref_output = ref_sdp_causal(q, k, v, NUM_HEADS, HEAD_DIM, mask)
+        student_output = student_sdpa_causal(q, k, v, NUM_HEADS, HEAD_DIM, mask)
+        ref_output = ref_sdpa_causal(q, k, v, NUM_HEADS, HEAD_DIM, mask)
 
         assert torch.allclose(student_output, ref_output, rtol=RTOL, atol=ATOL), (
             "Student's SDPA causal attention output doesn't match reference implementation"
@@ -190,34 +194,3 @@ def test_flash_causal_attention():
         pytest.skip("Student's Flash causal attention not implemented yet")
     except ImportError:
         pytest.skip("Flash Attention is not available")
-
-
-# Additional tests with no mask
-def test_eager_bidirectional_attention_no_mask():
-    """Test student's eager bidirectional attention implementation without a mask."""
-    q, k, v, _ = generate_test_data(with_mask=False)
-
-    try:
-        student_output = student_eager_bidirectional(q, k, v, NUM_HEADS, HEAD_DIM)
-        ref_output = ref_eager_bidirectional(q, k, v, NUM_HEADS, HEAD_DIM)
-
-        assert torch.allclose(student_output, ref_output, rtol=RTOL, atol=ATOL), (
-            "Student's eager bidirectional attention output (no mask) doesn't match reference implementation"
-        )
-    except NotImplementedError:
-        pytest.skip("Student's eager bidirectional attention not implemented yet")
-
-
-def test_eager_causal_attention_no_mask():
-    """Test student's eager causal attention implementation without a mask."""
-    q, k, v, _ = generate_test_data(with_mask=False)
-
-    try:
-        student_output = student_eager_causal(q, k, v, NUM_HEADS, HEAD_DIM)
-        ref_output = ref_eager_causal(q, k, v, NUM_HEADS, HEAD_DIM)
-
-        assert torch.allclose(student_output, ref_output, rtol=RTOL, atol=ATOL), (
-            "Student's eager causal attention output (no mask) doesn't match reference implementation"
-        )
-    except NotImplementedError:
-        pytest.skip("Student's eager causal attention not implemented yet")
