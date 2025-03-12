@@ -151,15 +151,26 @@ def test_flash_bidirectional_attention():
 
     try:
         # Call student implementation with Flash Attention format
-        student_output = student_flash_bidirectional(q_flash, k_flash, v_flash, NUM_HEADS, HEAD_DIM, cu_seqlens, max_seqlen)
+        student_output = student_flash_bidirectional(
+            q_flash.to(dtype=torch.bfloat16),
+            k_flash.to(dtype=torch.bfloat16),
+            v_flash.to(dtype=torch.bfloat16),
+            NUM_HEADS,
+            HEAD_DIM,
+            cu_seqlens,
+            max_seqlen,
+        )
 
         # Call reference implementation with Flash Attention format
-        ref_output = ref_flash_bidirectional(q_flash, k_flash, v_flash, NUM_HEADS, HEAD_DIM, cu_seqlens, max_seqlen)
-
-        # Reshape outputs back to standard format for comparison if needed
-        if student_output.shape != ref_output.shape:
-            student_output = student_output.reshape(BATCH_SIZE, SEQ_LEN, -1)
-            ref_output = ref_output.reshape(BATCH_SIZE, SEQ_LEN, -1)
+        ref_output = ref_flash_bidirectional(
+            q_flash.to(dtype=torch.bfloat16),
+            k_flash.to(dtype=torch.bfloat16),
+            v_flash.to(dtype=torch.bfloat16),
+            NUM_HEADS,
+            HEAD_DIM,
+            cu_seqlens,
+            max_seqlen,
+        )
 
         assert torch.allclose(student_output, ref_output, rtol=RTOL, atol=ATOL), (
             "Student's Flash bidirectional attention output doesn't match reference implementation"
@@ -177,15 +188,26 @@ def test_flash_causal_attention():
 
     try:
         # Call student implementation with Flash Attention format
-        student_output = student_flash_causal(q_flash, k_flash, v_flash, NUM_HEADS, HEAD_DIM, cu_seqlens, max_seqlen)
+        student_output = student_flash_causal(
+            q_flash.to(dtype=torch.bfloat16),
+            k_flash.to(dtype=torch.bfloat16),
+            v_flash.to(dtype=torch.bfloat16),
+            NUM_HEADS,
+            HEAD_DIM,
+            cu_seqlens,
+            max_seqlen,
+        )
 
         # Call reference implementation with Flash Attention format
-        ref_output = ref_flash_causal(q_flash, k_flash, v_flash, NUM_HEADS, HEAD_DIM, cu_seqlens, max_seqlen)
-
-        # Reshape outputs back to standard format for comparison if needed
-        if student_output.shape != ref_output.shape:
-            student_output = student_output.reshape(BATCH_SIZE, SEQ_LEN, -1)
-            ref_output = ref_output.reshape(BATCH_SIZE, SEQ_LEN, -1)
+        ref_output = ref_flash_causal(
+            q_flash.to(dtype=torch.bfloat16),
+            k_flash.to(dtype=torch.bfloat16),
+            v_flash.to(dtype=torch.bfloat16),
+            NUM_HEADS,
+            HEAD_DIM,
+            cu_seqlens,
+            max_seqlen,
+        )
 
         assert torch.allclose(student_output, ref_output, rtol=RTOL, atol=ATOL), (
             "Student's Flash causal attention output doesn't match reference implementation"
