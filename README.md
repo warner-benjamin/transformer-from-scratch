@@ -20,6 +20,24 @@ If you get stuck, each exercise has a Socratic prompt to paste into [ChatGPT](ht
 
 ## Getting Started
 
+### With Dev Container
+
+This repo has configuration files for a [VSCode dev container](https://code.visualstudio.com/docs/devcontainers/containers) with GPU support. It requires [installing the NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) (with NVIDIA GPU drivers) on a machine with [an NVIDIA GPU that supports Flash Attention](https://github.com/Dao-AILab/flash-attention?tab=readme-ov-file#nvidia-cuda-support), but then it should "just work" without additional installation or configuration.
+
+You can run the following commands to confirm the setup. This one should print "True":
+
+```bash
+python -c "import torch; print(torch.cuda.is_available())"
+```
+
+This one should not raise an exception:
+
+```bash
+python -c "import flash_attn"
+```
+
+### Without Docker
+
 This project uses [uv](https://docs.astral.sh/uv/) to manage dependencies (uv is compatible with Conda environments, see the [GPU](#gpu) section for an example of how to integrate the two). First clone the repository.
 
 ```bash
@@ -29,13 +47,13 @@ cd transformer-from-scratch
 
 Then depending on your system, run one of the following commands to install the dependencies.
 
-### CPU
+#### CPU
 
 ```bash
 uv sync --extra cpu
 ```
 
-### GPU
+#### GPU
 
 For Flash Attention support you'll need to install Cuda/Cuda Toolkit 12.4. The simplest way is to use [Miniconda](https://docs.anaconda.com/miniconda/install) to install it.
 
@@ -58,7 +76,7 @@ uv sync --extra gpu
 uv sync --extra gpu --extra flash --no-cache
 ```
 
-### Apple Silicon (macOS)
+#### Apple Silicon (macOS)
 
 ```bash
 uv sync
