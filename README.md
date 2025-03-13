@@ -33,6 +33,8 @@ Then depending on your system, run one of the following commands to install the 
 
 This repo has configuration files for a [VSCode dev container](https://code.visualstudio.com/docs/devcontainers/containers) configured for a machine with [an NVIDIA GPU that supports Flash Attention](https://github.com/Dao-AILab/flash-attention?tab=readme-ov-file#nvidia-cuda-support). It requires [installing the NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) (which requires installing NVIDIA GPU drivers on the host machine), but then it should "just work".
 
+#### Verifying GPU Setup
+
 You can run the following commands to confirm the setup. This one should print "True":
 
 ```bash
