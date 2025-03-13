@@ -20,9 +20,18 @@ If you get stuck, each exercise has a Socratic prompt to paste into [ChatGPT](ht
 
 ## Getting Started
 
+This project uses [uv](https://docs.astral.sh/uv/) to manage dependencies (uv is compatible with Conda environments, see the [GPU](#gpu) section for an example of how to integrate the two). First clone the repository.
+
+```bash
+git clone https://github.com/warner-benjamin/transformer-from-scratch.git
+cd transformer-from-scratch
+```
+
+Then depending on your system, run one of the following commands to install the dependencies.
+
 ### With Dev Container
 
-This repo has configuration files for a [VSCode dev container](https://code.visualstudio.com/docs/devcontainers/containers) with GPU support. It requires [installing the NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) (with NVIDIA GPU drivers) on a machine with [an NVIDIA GPU that supports Flash Attention](https://github.com/Dao-AILab/flash-attention?tab=readme-ov-file#nvidia-cuda-support), but then it should "just work" without additional installation or configuration.
+This repo has configuration files for a [VSCode dev container](https://code.visualstudio.com/docs/devcontainers/containers) configured for a machine with [an NVIDIA GPU that supports Flash Attention](https://github.com/Dao-AILab/flash-attention?tab=readme-ov-file#nvidia-cuda-support). It requires [installing the NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) (which requires installing NVIDIA GPU drivers on the host machine), but then it should "just work".
 
 You can run the following commands to confirm the setup. This one should print "True":
 
@@ -36,16 +45,7 @@ This one should not raise an exception:
 python -c "import flash_attn"
 ```
 
-### Without Docker
-
-This project uses [uv](https://docs.astral.sh/uv/) to manage dependencies (uv is compatible with Conda environments, see the [GPU](#gpu) section for an example of how to integrate the two). First clone the repository.
-
-```bash
-git clone https://github.com/warner-benjamin/transformer-from-scratch.git
-cd transformer-from-scratch
-```
-
-Then depending on your system, run one of the following commands to install the dependencies.
+### Without Dev Container
 
 #### CPU
 
@@ -67,7 +67,9 @@ export UV_PROJECT_ENVIRONMENT="$CONDA_PREFIX"
 
 Or install [system Cuda](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/) (not recommended).
 
-With Cuda/Cuda Toolkit installed, then use uv to install the library:
+You will ALSO need to have recent [NVIDIA drivers installed](https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/index.html), which is separate from the Cuda/Cuda Toolkit installation.
+
+With NVIDIA drivers and Cuda/Cuda Toolkit installed, then use uv to install the library:
 
 ```bash
 uv sync --extra gpu

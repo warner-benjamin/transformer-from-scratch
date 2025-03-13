@@ -1,6 +1,9 @@
 FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu20.04
 COPY --from=ghcr.io/astral-sh/uv:0.6.5 /uv /uvx /bin/
 
+LABEL maintainer="Greg Gandenberger <gsganden@gmail.com>"
+LABEL description="Development environment for Transformer from Scratch"
+
 WORKDIR /transformer-from-scratch
 
 RUN apt-get update \
