@@ -27,19 +27,22 @@ class EagerBidirectionalAttentionBlock(nn.Module):
         num_heads: int,
         dropout: float = 0.0,
     ):
+        """
+        Initialize the bidirectional attention block with eager implementation.
+
+        Args:
+            hidden_dim: Dimension of the input and output features
+            num_heads: Number of attention heads
+            dropout: Output dropout probability (0.0 means no dropout)
+
+        Note:
+            - Make sure to check that hidden_dim is divisible by num_heads
+            - You'll need to create projection layers for query, key, and value
+            - Don't forget the output projection layer
+            - Create a dropout layer if dropout > 0.0, otherwise use nn.Identity
+        """
         super().__init__()
-        assert hidden_dim % num_heads == 0, "hidden_dim must be divisible by num_heads"
-        self.num_heads = num_heads
-        self.head_dim = hidden_dim // num_heads
-        self.dropout = nn.Dropout(dropout) if dropout > 0.0 else nn.Identity()
-
-        # Projection layers for query, key, and value
-        self.Wq = nn.Linear(hidden_dim, hidden_dim)
-        self.Wk = nn.Linear(hidden_dim, hidden_dim)
-        self.Wv = nn.Linear(hidden_dim, hidden_dim)
-
-        # Output projection layer
-        self.Wo = nn.Linear(hidden_dim, hidden_dim)
+        raise NotImplementedError("Implement initialization for bidirectional attention block using PyTorch operations")
 
     def forward(self, x: Tensor, mask: BoolTensor | None = None) -> Tensor:
         """
@@ -47,59 +50,12 @@ class EagerBidirectionalAttentionBlock(nn.Module):
 
         Args:
             x: Input tensor of shape [batch_size, seq_len, hidden_dim].
-            mask: Optional boolean mask of shape [batch_size, seq_len] where False indicates a masked position.
+            mask: Optional boolean mask of shape [batch_size, seq_len] where True indicates a masked position.
 
         Returns:
             Tensor of shape [batch_size, seq_len, hidden_dim] after attention.
         """
-        batch_size, seq_len, hidden_dim = x.size()
-
-        # Compute Q, K, V projections
-        q = self.Wq(x)
-        k = self.Wk(x)
-        v = self.Wv(x)
-
-        # Reshape to separate the heads
-        # [batch_size, seq_len, hidden_dim] -> [batch_size, seq_len, num_heads, head_dim]
-        q = q.reshape(batch_size, seq_len, self.num_heads, self.head_dim)
-        k = k.reshape(batch_size, seq_len, self.num_heads, self.head_dim)
-        v = v.reshape(batch_size, seq_len, self.num_heads, self.head_dim)
-
-        # Transpose to get [batch_size, num_heads, seq_len, head_dim]
-        q = q.transpose(1, 2)
-        k = k.transpose(1, 2)
-        v = v.transpose(1, 2)
-
-        # Compute attention scores: [batch_size, num_heads, seq_len, seq_len]
-        attn = q @ k.transpose(-2, -1)
-
-        # Scale by square root of head dimension
-        attn = attn / math.sqrt(self.head_dim)
-
-        # Apply mask if provided
-        if mask is not None:
-            # Reshape mask to [batch_size, 1, 1, seq_len]
-            # And invert since we want to mask out the positions where it is False
-            mask = ~mask.view(batch_size, 1, 1, seq_len)
-            attn = attn.masked_fill(mask, float("-inf"))
-
-        # Apply softmax to get attention weights
-        attn = F.softmax(attn, dim=-1)
-
-        # Apply attention weights to values
-        # [batch_size, num_heads, seq_len, seq_len] @ [batch_size, num_heads, seq_len, head_dim]
-        # -> [batch_size, num_heads, seq_len, head_dim]
-        output = attn @ v
-
-        # Transpose and reshape back to [batch_size, seq_len, hidden_dim]
-        output = output.transpose(1, 2).reshape(batch_size, seq_len, hidden_dim)
-
-        # Apply dropout
-        output = self.dropout(output)
-
-        # Final projection
-        output = self.Wo(output)
-        return output
+        raise NotImplementedError("Implement bidirectional attention block using PyTorch operations")
 
 
 class EagerCausalAttentionBlock(nn.Module):
