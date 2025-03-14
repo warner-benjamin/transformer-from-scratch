@@ -50,6 +50,8 @@ $$
 
 Do not apply any attention dropout as this is rarely used in practice. The projection dropout should be applied after the output linear layer.
 
+The test code assumes that your linear layers are named `self.Wq`, `self.Wk`, `self.Wv`, and `self.Wo`.
+
 ### Common Structure
 
 All attention block implementations should:
