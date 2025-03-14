@@ -37,7 +37,13 @@ uv sync --extra cpu
 
 ### GPU
 
-For Flash Attention support you'll need to install Cuda/Cuda Toolkit 12.4. The simplest way is to use [Miniconda](https://docs.anaconda.com/miniconda/install) to install it.
+Flash Attention requires [recent NVIDIA drivers](https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/index.html) and Cuda/Cuda Toolkit on a machine with [a recent NVIDIA GPU](https://github.com/Dao-AILab/flash-attention?tab=readme-ov-file#nvidia-cuda-support).
+
+You have a few options for installing the Cuda/Cuda Tookit.
+
+#### Option 1: Miniconda
+
+One option for installing Cuda/Cuda Toolkit is to use [Miniconda](https://docs.anaconda.com/miniconda/install).
 
 ```bash
 # swap cuda-toolkit for cuda if you want to compile cuda packages
@@ -47,9 +53,19 @@ conda activate fromscratch
 export UV_PROJECT_ENVIRONMENT="$CONDA_PREFIX"
 ```
 
-Or install [system Cuda](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/) (not recommended).
+#### Option 2: System Cuda
 
-With Cuda/Cuda Toolkit installed, then use uv to install the library:
+Alternatively, you can install install [system Cuda](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/) (not recommended).
+
+#### Option 3: Dev Container
+
+A third option is to build the [VSCode dev container](https://code.visualstudio.com/docs/devcontainers/containers). This approach requires installing Docker and [the NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
+
+#### Additional Steps
+
+All of the options above require ALSO installing recent NVIDIA drivers. That includes the dev container, which depends on NVIDIA drivers on the host machine despite using Docker.
+
+If not using the dev container, execute these steps to install the library and its dependencies:
 
 ```bash
 uv sync --extra gpu
@@ -58,17 +74,31 @@ uv sync --extra gpu
 uv sync --extra gpu --extra flash --no-cache
 ```
 
+#### Verifying GPU Setup
+
+You can run the following commands to confirm the setup. This one should print "True":
+
+```bash
+python -c "import torch; print(torch.cuda.is_available())"
+```
+
+This one should not raise an exception:
+
+```bash
+python -c "import flash_attn"
+```
+
 ### Apple Silicon (macOS)
 
 ```bash
 uv sync
 ```
 
-### Notebooks
+## Notebooks
 
 If you want to use a notebook to work through the exercises, you can install VSCode notebook, Jupyter Lab, and NBClassic support by adding the `--extra notebook` flag to your final uv sync command.
 
-### Tests
+## Tests
 
 After installing, you can run the tests to make sure everything is working.
 
