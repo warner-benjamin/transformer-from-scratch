@@ -22,7 +22,13 @@ The attention mechanism is a key component of transformer models. It allows the 
 Remember, the attention mechanism is defined by the following equation:
 
 $$
-\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^\top}{\sqrt{d}}\right)V
+\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d}}\right)\mathbf{V}
+$$
+
+where $\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V})$ is a simplified notation of multi-head attention:
+
+$$
+\text{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \mathrm{concat}(\text{Attention}(\mathbf{Q}_h, \mathbf{K}_h, \mathbf{V}_h), \text{ for all } h) \\[0.5em]
 $$
 
 ## Getting Started
@@ -41,7 +47,7 @@ Don't use Cursor, Copilot, or other AI powered IDEs, they will not follow the So
 
 ## Implementation Details
 
-Do not apply any attention dropout.
+Do not apply any attention dropout as this is rarely used in practice.
 
 ### Eager Implementations
 

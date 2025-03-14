@@ -2,7 +2,7 @@ import pytest
 import torch
 
 # Import student implementations
-from attention import (
+from exercises.attention_mechanism.attention import (
     eager_bidirectional_attention as student_eager_bidirectional,
     eager_causal_attention as student_eager_causal,
     sdpa_bidirectional_attention as student_sdpa_bidirectional,
@@ -12,7 +12,7 @@ from attention import (
 )
 
 # Import reference implementations
-from solution.hidden.reference_attention import (
+from exercises.attention_mechanism.solution.hidden.reference_attention import (
     eager_bidirectional_attention as ref_eager_bidirectional,
     eager_causal_attention as ref_eager_causal,
     sdpa_bidirectional_attention as ref_sdpa_bidirectional,

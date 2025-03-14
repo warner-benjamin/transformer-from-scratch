@@ -6,9 +6,13 @@ This repository is a companion to my *Create a Transformer From Scratch* series,
 
 ## Current exercises:
 
-- [Attention Mechanism](exercises/attention_mechanism/README.md)
+1. Attention:
+   - [Attention Mechanism](exercises/attention_mechanism/README.md)
+   - [Attention Block](exercises/attention_block/README.md)
 
 > **Note:** The reference implementations are generally available in `solution` folders, but you are strongly encouraged to implement the solutions yourself before looking at them. The learning happens in the struggle!
+
+The attention mechanism is the hardest part of building a classical Transformer from scratch.
 
 ## How to Use this Repository
 
@@ -17,6 +21,8 @@ After installing (see the [Getting Started](#getting-started) section below), wo
 Make sure to turn off any code completion tools (e.g. Copilot or Cursor autocomplete) as they will likely be able to solve the exercises for you.
 
 If you get stuck, each exercise has a Socratic prompt to paste into [ChatGPT](https://chatgpt.com) or [Claude](https://claude.ai). These prompts should instruct ChatGPT or Claude to guide you through the problem, rather than give you the solution outright.
+
+Attention has two parts, the attention mechanism and the attention block. If you think you have a good grasp of how attention works, you can skip the attention mechanism exercise and go straight to the attention block exercise, implementing both attention mechanism and attention block in one go. Otherwise, feel free to complete them in order.
 
 ## Getting Started
 
@@ -39,7 +45,7 @@ uv sync --extra cpu
 
 Flash Attention requires [recent NVIDIA drivers](https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/index.html) and Cuda/Cuda Toolkit on a machine with [a recent NVIDIA GPU](https://github.com/Dao-AILab/flash-attention?tab=readme-ov-file#nvidia-cuda-support).
 
-You have a few options for installing the Cuda/Cuda Tookit.
+You have a few options for installing Cuda/Cuda Toolkit.
 
 #### Option 1: Miniconda
 
@@ -61,7 +67,9 @@ Alternatively, you can install install [system Cuda](https://docs.nvidia.com/cud
 
 A third option is to build the [VSCode dev container](https://code.visualstudio.com/docs/devcontainers/containers). This approach requires installing Docker and [the NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
 
-#### Additional Steps
+The dev container will install the library, no additional steps are required.
+
+#### After installing Cuda/Cuda Toolkit.
 
 All of the options above require ALSO installing recent NVIDIA drivers. That includes the dev container, which depends on NVIDIA drivers on the host machine despite using Docker.
 
