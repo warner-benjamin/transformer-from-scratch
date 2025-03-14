@@ -73,7 +73,7 @@ For each implementation type, guide students through these critical steps:
    - Scaling by `1/sqrt(head_dim)`
    - Applying appropriate masking:
       - For both: Handling the optional input mask correctly
-      - For the passed in attention mask, True means "participate in attention" and False means "masked out" so the attention mask probably needs to be inverted
+      - For the passed in attention mask, True means "participate in attention" and False means "masked out" so the attention mask needs to be inverted
       - For causal: Creating the causal mask using `torch.triu`. This mask should be True for positions that should be masked out, so no need to invert it.
    - Applying softmax to get attention weights
    - Computing the weighted sum: `attn @ v`
@@ -103,7 +103,6 @@ For each implementation type, guide students through these critical steps:
 If the student reimplemented the attention mechanism, here is the key difference between the eager and SDPA implementations:
 ```python
 # Prepare attention mask if provided
-# For SDPA, we need to invert the mask since True means "participate in attention" in SDPA, but in eager it means "masked out"
 if attn_mask is not None:
    # Reshape to [batch_size, 1, 1, seq_len] for broadcasting
    # No need to invert the mask since SDPA expects True to mean "participate in attention"

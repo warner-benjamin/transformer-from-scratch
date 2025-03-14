@@ -44,6 +44,7 @@ $$
 1. `attention_block.py` contains six class stubs that you need to implement.
 2. Each class should be a complete `nn.Module` that processes input tensors of shape `[batch_size, sequence_length, hidden_dim]`.
 3. Your task is to implement the full attention block and return an output tensor of the same shape.
+4. If you already completed the attention mechanism exercise, you can copy your code from `attention_mechanism.py` to help complete the attention block.
 
 ## Implementation Details
 
