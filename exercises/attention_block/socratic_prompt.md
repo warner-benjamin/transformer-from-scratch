@@ -77,11 +77,12 @@ For each implementation type, guide students through these critical steps:
       - For causal: Creating the causal mask using `torch.triu`. This mask should be True for positions that should be masked out, so no need to invert it.
    - Applying softmax to get attention weights
    - Computing the weighted sum: `attn @ v`
+   - Don't apply attention dropout
 
 3. **Output processing**:
    - Reshaping back to the original format
-   - Applying dropout if specified
    - Final projection through output layer
+   - Applying projection dropout if specified
 
 ### SDPA Implementations
 
@@ -92,11 +93,12 @@ For each implementation type, guide students through these critical steps:
    - Using `F.scaled_dot_product_attention` with the right parameters
    - Setting `is_causal=True` for causal attention
    - Properly handling the mask parameter
+   - Don't apply attention dropout
 
 3. **Output processing**:
    - Reshaping (perhaps using a view) back to the original format: `[batch_size, seq_len, hidden_dim]`
-   - Applying dropout if specified
    - Final projection through output layer
+   - Applying projection dropout if specified
 
 If the student reimplemented the attention mechanism, here is the key difference between the eager and SDPA implementations:
 ```python
@@ -123,11 +125,12 @@ output = F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask, is_causal=
    - Using `flash_attn_varlen_func` with the correct parameters
    - Setting `causal=True` for causal attention
    - Using `cu_seqlens` and `max_seqlen` correctly
+   - Don't apply attention dropout
 
 3. **Output processing**:
    - Reshaping (perhaps using a view) the output back to the original format: `[total_seq_len, hidden_dim]`
-   - Applying dropout if specified
    - Final projection through output layer
+   - Applying projection dropout if specified
 
 If the student reimplemented the attention mechanism, here is the key difference between the eager and Flash Attention implementations:
 ```python

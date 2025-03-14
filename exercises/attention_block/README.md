@@ -22,8 +22,22 @@ The attention block is a key component of transformer models. It includes the fu
 A complete attention block performs the following operations:
 1. Linear projections of the input to create queries (Q), keys (K), and values (V)
 2. Multi-head attention computation
-3. Optional dropout
-4. Output projection back to the original dimension
+3. Output projection back to the original dimension
+4. Optional projection dropout
+
+Or, in equation form (ignoring final dropout):
+
+$$
+\mathbf{Q} = W^Q\mathbf{X}, \quad \mathbf{K} = W^K\mathbf{X}, \quad \mathbf{V} = W^V\mathbf{X} \\
+\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d}}\right)\mathbf{V} \\
+\mathbf{X} = W^O\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V})
+$$
+
+where $\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V})$ is a simplified notation of multi-head attention:
+
+$$
+\text{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \mathrm{concat}(\text{Attention}(\mathbf{Q}_h, \mathbf{K}_h, \mathbf{V}_h), \text{ for all } h) \\[0.5em]
+$$
 
 ## Getting Started
 
@@ -33,13 +47,15 @@ A complete attention block performs the following operations:
 
 ## Implementation Details
 
+Do not apply any attention dropout as this is rarely used in practice. The projection dropout should be applied after the output linear layer.
+
 ### Common Structure
 
 All attention block implementations should:
 1. Have projection layers for query, key, and value
 2. Support multi-head attention
 3. Include an output projection
-4. Support optional dropout
+4. Support optional projection dropout
 
 ### Eager Implementations
 
@@ -97,4 +113,4 @@ The tests will compare your implementation against a reference implementation. I
 - The mask is a boolean tensor of shape `[batch_size, sequence_length]` where `False` indicates masked positions.
 - Flash Attention only works on Ampere or newer Nvidia GPUs.
 
-Good luck! 
+Good luck!

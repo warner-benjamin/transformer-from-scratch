@@ -57,12 +57,14 @@ For each implementation type, guide students through these critical steps:
 6. Applying softmax to get attention weights
 7. Computing the weighted sum: `attn @ v`
 8. Reshaping back to the original format
+9. Don't apply attention dropout
 
 ### SDPA Implementations
 1. Reshaping and transposing as in eager implementation
 2. Using `F.scaled_dot_product_attention` with the right parameters
 3. Setting `is_causal=True` for causal attention
 4. Reshaping the output back to the original format
+5. Don't apply attention dropout
 
 Here is the key difference between the eager and SDPA implementations:
 ```python
@@ -85,7 +87,7 @@ output = F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask, is_causal=
 5. Setting `causal=True` for causal attention
 6. Using `cu_seqlens` and `max_seqlen` correctly
 7. Reshaping the output back to the original format
-
+8. Don't apply attention dropout
 Here is the key difference between the eager and Flash Attention implementations:
 ```python
 # Reshape to separate the heads: [total_seq_len, hidden_dim] -> [total_seq_len, num_heads, head_dim]
