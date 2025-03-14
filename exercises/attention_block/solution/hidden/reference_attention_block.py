@@ -26,7 +26,6 @@ class EagerBidirectionalAttentionBlock(nn.Module):
         assert hidden_dim % num_heads == 0, "hidden_dim must be divisible by num_heads"
         self.num_heads = num_heads
         self.head_dim = hidden_dim // num_heads
-        self.dropout = nn.Dropout(dropout) if dropout > 0.0 else nn.Identity()
 
         # Projection layers for query, key, and value
         self.Wq = nn.Linear(hidden_dim, hidden_dim)
@@ -35,6 +34,8 @@ class EagerBidirectionalAttentionBlock(nn.Module):
 
         # Output projection layer
         self.Wo = nn.Linear(hidden_dim, hidden_dim)
+
+        self.dropout = nn.Dropout(dropout) if dropout > 0.0 else nn.Identity()
 
     def forward(self, x: Tensor, mask: BoolTensor | None = None) -> Tensor:
         """
@@ -89,11 +90,11 @@ class EagerBidirectionalAttentionBlock(nn.Module):
         # Transpose and reshape back to [batch_size, seq_len, hidden_dim]
         output = output.transpose(1, 2).reshape(batch_size, seq_len, hidden_dim)
 
-        # Apply dropout
-        output = self.dropout(output)
-
         # Final projection
         output = self.Wo(output)
+
+        # Apply dropout
+        output = self.dropout(output)
         return output
 
 
@@ -108,7 +109,6 @@ class EagerCausalAttentionBlock(nn.Module):
         assert hidden_dim % num_heads == 0, "hidden_dim must be divisible by num_heads"
         self.num_heads = num_heads
         self.head_dim = hidden_dim // num_heads
-        self.dropout = nn.Dropout(dropout) if dropout > 0.0 else nn.Identity()
 
         # Projection layers for Q, K, V
         self.Wq = nn.Linear(hidden_dim, hidden_dim)
@@ -117,6 +117,8 @@ class EagerCausalAttentionBlock(nn.Module):
 
         # Output projection layer
         self.Wo = nn.Linear(hidden_dim, hidden_dim)
+
+        self.dropout = nn.Dropout(dropout) if dropout > 0.0 else nn.Identity()
 
         # Causal mask (upper triangular), here true means mask out the position so we don't need to invert it
         self.register_buffer("causal_mask", torch.triu(torch.ones(max_seq_len, max_seq_len, dtype=torch.bool), diagonal=1))
@@ -181,11 +183,11 @@ class EagerCausalAttentionBlock(nn.Module):
         # Transpose and reshape back to [batch_size, seq_len, hidden_dim]
         output = output.transpose(1, 2).reshape(batch_size, seq_len, hidden_dim)
 
-        # Apply dropout
-        output = self.dropout(output)
-
         # Final projection.
         output = self.Wo(output)
+
+        # Apply dropout
+        output = self.dropout(output)
         return output
 
 
@@ -200,7 +202,6 @@ class SDPABidirectionalAttentionBlock(nn.Module):
         assert hidden_dim % num_heads == 0, "hidden_dim must be divisible by num_heads"
         self.num_heads = num_heads
         self.head_dim = hidden_dim // num_heads
-        self.dropout = nn.Dropout(dropout) if dropout > 0.0 else nn.Identity()
 
         # Projection layers.
         self.Wq = nn.Linear(hidden_dim, hidden_dim)
@@ -209,6 +210,8 @@ class SDPABidirectionalAttentionBlock(nn.Module):
 
         # Output projection.
         self.Wo = nn.Linear(hidden_dim, hidden_dim)
+
+        self.dropout = nn.Dropout(dropout) if dropout > 0.0 else nn.Identity()
 
     def forward(self, x: Tensor, mask: BoolTensor | None = None) -> Tensor:
         """
@@ -251,11 +254,11 @@ class SDPABidirectionalAttentionBlock(nn.Module):
         # Transpose and reshape back to [batch_size, seq_len, hidden_dim]
         output = output.transpose(1, 2).view(batch_size, seq_len, hidden_dim)
 
-        # Apply dropout
-        output = self.dropout(output)
-
         # Final output projection.
         output = self.Wo(output)
+
+        # Apply dropout
+        output = self.dropout(output)
         return output
 
 
@@ -270,7 +273,6 @@ class SDPACausalAttentionBlock(nn.Module):
         assert hidden_dim % num_heads == 0, "hidden_dim must be divisible by num_heads"
         self.num_heads = num_heads
         self.head_dim = hidden_dim // num_heads
-        self.dropout = nn.Dropout(dropout) if dropout > 0.0 else nn.Identity()
 
         # Projection layers.
         self.Wq = nn.Linear(hidden_dim, hidden_dim)
@@ -279,6 +281,9 @@ class SDPACausalAttentionBlock(nn.Module):
 
         # Output projection.
         self.Wo = nn.Linear(hidden_dim, hidden_dim)
+
+        # Optional dropout.
+        self.dropout = nn.Dropout(dropout) if dropout > 0.0 else nn.Identity()
 
     def forward(self, x: Tensor, mask: BoolTensor | None = None) -> Tensor:
         """
@@ -321,11 +326,11 @@ class SDPACausalAttentionBlock(nn.Module):
         # Transpose and reshape back to [batch_size, seq_len, hidden_dim]
         output = output.transpose(1, 2).view(batch_size, seq_len, hidden_dim)
 
-        # Apply dropout
-        output = self.dropout(output)
-
         # Final projection.
         output = self.Wo(output)
+
+        # Apply dropout
+        output = self.dropout(output)
         return output
 
 
@@ -344,7 +349,6 @@ class FlashBidirectionalAttentionBlock(nn.Module):
         self.hidden_dim = hidden_dim
         self.num_heads = num_heads
         self.head_dim = hidden_dim // num_heads
-        self.dropout = nn.Dropout(dropout) if dropout > 0.0 else nn.Identity()
 
         # Projection layers.
         self.Wq = nn.Linear(hidden_dim, hidden_dim)
@@ -353,6 +357,9 @@ class FlashBidirectionalAttentionBlock(nn.Module):
 
         # Output projection.
         self.Wo = nn.Linear(hidden_dim, hidden_dim)
+
+        # Optional dropout.
+        self.dropout = nn.Dropout(dropout) if dropout > 0.0 else nn.Identity()
 
     def forward(self, x: Tensor, cu_seqlens: Tensor, max_seqlen: int) -> Tensor:
         """
@@ -395,11 +402,11 @@ class FlashBidirectionalAttentionBlock(nn.Module):
         # Reshape back to original format: [total_seq_len, num_heads, head_dim] -> [total_seq_len, hidden_dim]
         attn_output = attn_output.view(total_seq_len, hidden_dim)
 
-        # Apply dropout
-        attn_output = self.dropout(attn_output)
-
         # Final projection.
         output = self.Wo(attn_output)
+
+        # Apply dropout
+        output = self.dropout(output)
         return output
 
 
@@ -418,7 +425,6 @@ class FlashCausalAttentionBlock(nn.Module):
         self.hidden_dim = hidden_dim
         self.num_heads = num_heads
         self.head_dim = hidden_dim // num_heads
-        self.dropout = nn.Dropout(dropout) if dropout > 0.0 else nn.Identity()
 
         # Projection layers.
         self.Wq = nn.Linear(hidden_dim, hidden_dim)
@@ -427,6 +433,9 @@ class FlashCausalAttentionBlock(nn.Module):
 
         # Output projection.
         self.Wo = nn.Linear(hidden_dim, hidden_dim)
+
+        # Optional dropout.
+        self.dropout = nn.Dropout(dropout) if dropout > 0.0 else nn.Identity()
 
     def forward(self, x: Tensor, cu_seqlens: Tensor, max_seqlen: int) -> Tensor:
         """
@@ -469,9 +478,9 @@ class FlashCausalAttentionBlock(nn.Module):
         # Reshape back to original format: [total_seq_len, num_heads, head_dim] -> [total_seq_len, hidden_dim]
         attn_output = attn_output.view(total_seq_len, hidden_dim)
 
-        # Apply dropout
-        attn_output = self.dropout(attn_output)
-
         # Final projection.
         output = self.Wo(attn_output)
+
+        # Apply dropout
+        output = self.dropout(output)
         return output

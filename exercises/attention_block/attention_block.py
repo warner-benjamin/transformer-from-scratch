@@ -37,9 +37,9 @@ class EagerBidirectionalAttentionBlock(nn.Module):
 
         Note:
             - Make sure to check that hidden_dim is divisible by num_heads
-            - You'll need to create projection layers for query, key, and value
-            - Don't forget the output projection layer
-            - Create a dropout layer if dropout > 0.0, otherwise use nn.Identity
+            - You'll need to create linear (projection) layers for query, key, and value
+            - Don't forget the output linear (projection) layer
+            - Create an output dropout layer
         """
         super().__init__()
         raise NotImplementedError("Implement initialization for bidirectional attention block using PyTorch operations")
@@ -78,12 +78,12 @@ class EagerCausalAttentionBlock(nn.Module):
             hidden_dim: Dimension of the input and output features
             num_heads: Number of attention heads
             dropout: Output dropout probability (0.0 means no dropout)
-            max_seq_len: Maximum sequence length (for masking)
+            max_seq_len: Maximum sequence length (for causal masking)
         Note:
             - Make sure to check that hidden_dim is divisible by num_heads
-            - You'll need to create projection layers for query, key, and value
-            - Don't forget the output projection layer
-            - Create a dropout layer if dropout > 0.0, otherwise use nn.Identity
+            - You'll need to create linear (projection) layers for query, key, and value
+            - Don't forget the output linear (projection) layer
+            - Create an output dropout layer
         """
         super().__init__()
         raise NotImplementedError("Implement initialization for causal attention block using PyTorch operations")
@@ -124,9 +124,9 @@ class SDPABidirectionalAttentionBlock(nn.Module):
 
         Note:
             - Make sure to check that hidden_dim is divisible by num_heads
-            - You'll need to create projection layers for query, key, and value
-            - Don't forget the output projection layer
-            - Create a dropout layer if dropout > 0.0, otherwise use nn.Identity
+            - You'll need to create linear (projection) layers for query, key, and value
+            - Don't forget the output linear (projection) layer
+            - Create an output dropout layer
         """
         super().__init__()
         raise NotImplementedError("Implement initialization for bidirectional attention block using PyTorch's SDPA")
@@ -167,9 +167,9 @@ class SDPACausalAttentionBlock(nn.Module):
 
         Note:
             - Make sure to check that hidden_dim is divisible by num_heads
-            - You'll need to create projection layers for query, key, and value
-            - Don't forget the output projection layer
-            - Create a dropout layer if dropout > 0.0, otherwise use nn.Identity
+            - You'll need to create linear (projection) layers for query, key, and value
+            - Don't forget the output linear (projection) layer
+            - Create an output dropout layer
         """
         super().__init__()
         raise NotImplementedError("Implement initialization for causal attention block using PyTorch's SDPA")
@@ -211,9 +211,9 @@ class FlashBidirectionalAttentionBlock(nn.Module):
         Note:
             - Make sure to check that hidden_dim is divisible by num_heads
             - Check if Flash Attention is available (FLASH_ATTN_AVAILABLE)
-            - You'll need to create projection layers for query, key, and value
-            - Don't forget the output projection layer
-            - Create a dropout layer if dropout > 0.0, otherwise use nn.Identity
+            - You'll need to create linear (projection) layers for query, key, and value
+            - Don't forget the output linear (projection) layer
+            - Create an output dropout layer
         """
         super().__init__()
         raise NotImplementedError("Implement initialization for bidirectional attention block using Flash Attention")
@@ -264,9 +264,9 @@ class FlashCausalAttentionBlock(nn.Module):
         Note:
             - Make sure to check that hidden_dim is divisible by num_heads
             - Check if Flash Attention is available (FLASH_ATTN_AVAILABLE)
-            - You'll need to create projection layers for query, key, and value
-            - Don't forget the output projection layer
-            - Create a dropout layer if dropout > 0.0, otherwise use nn.Identity
+            - You'll need to create linear (projection) layers for query, key, and value
+            - Don't forget the output linear (projection) layer
+            - Create an output dropout layer
         """
         super().__init__()
         raise NotImplementedError("Implement initialization for causal attention block using Flash Attention")
