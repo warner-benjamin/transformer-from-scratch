@@ -22,14 +22,16 @@ The attention mechanism is a key component of transformer models. It allows the 
 Remember, the attention mechanism is defined by the following equation:
 
 $$
-\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d}}\right)\mathbf{V}
+\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\!\Bigl(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d}}\Bigr)\mathbf{V}, \\
 $$
 
-where $\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V})$ is a simplified notation of multi-head attention:
+where $\mathbf{X}$ is the input and $\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V})$ is a simplification of multi-head attention:
 
 $$
-\text{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \mathrm{concat}(\text{Attention}(\mathbf{Q}_h, \mathbf{K}_h, \mathbf{V}_h), \text{ for all } h) \\[0.5em]
+\text{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \mathrm{concat}(\text{Attention}(\mathbf{Q}_h, \mathbf{K}_h, \mathbf{V}_h), \text{ for all } h), \\
 $$
+
+where $h$ is the number of attention heads.
 
 ## Getting Started
 

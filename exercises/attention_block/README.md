@@ -28,16 +28,18 @@ A complete attention block performs the following operations:
 Or, in equation form (ignoring final dropout):
 
 $$
-\mathbf{Q} = W^Q\mathbf{X}, \quad \mathbf{K} = W^K\mathbf{X}, \quad \mathbf{V} = W^V\mathbf{X} \\
-\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d}}\right)\mathbf{V} \\
-\mathbf{X} = W^O\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V})
+\mathbf{Q} = \mathbf{X}\mathbf{W}^Q, \quad \mathbf{K} = \mathbf{X}\mathbf{W}^K, \quad \mathbf{V} = \mathbf{X}\mathbf{W}^V, \\[0.5em]
+\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\!\Bigl(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d}}\Bigr)\mathbf{V}, \\[0.5em]
+\mathbf{X} = \text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V})\,\mathbf{W}^O,
 $$
 
-where $\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V})$ is a simplified notation of multi-head attention:
+where $\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V})$ is a simplification of multi-head attention:
 
 $$
-\text{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \mathrm{concat}(\text{Attention}(\mathbf{Q}_h, \mathbf{K}_h, \mathbf{V}_h), \text{ for all } h) \\[0.5em]
+\text{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \mathrm{concat}(\text{Attention}(\mathbf{Q}_h, \mathbf{K}_h, \mathbf{V}_h), \text{ for all } h), \\[0.5em]
 $$
+
+where $h$ is the number of attention heads, $\mathbf{X}$ is the input, and $\mathbf{X}\mathbf{W}$ is shorthand for $\mathbf{X} \cdot \mathbf{A} + \mathbf{b}$ (where $\mathbf{A}$ and $\mathbf{b}$ are learnable parameters).
 
 ## Getting Started
 
