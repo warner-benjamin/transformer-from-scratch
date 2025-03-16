@@ -50,7 +50,8 @@ class EagerBidirectionalAttentionBlock(nn.Module):
 
         Args:
             x: Input tensor of shape [batch_size, seq_len, hidden_dim].
-            mask: Optional boolean mask of shape [batch_size, seq_len] where True indicates a masked position.
+            mask: Optional boolean mask of shape [batch_size, sequence_length]
+                  where True indicates attended tokens and False masked positions
 
         Returns:
             Tensor of shape [batch_size, seq_len, hidden_dim] after attention.
@@ -94,7 +95,8 @@ class EagerCausalAttentionBlock(nn.Module):
 
         Args:
             x: Input tensor of shape [batch_size, seq_len, hidden_dim].
-            mask: Optional boolean mask of shape [batch_size, seq_len] where True indicates a masked position.
+            mask: Optional boolean mask of shape [batch_size, sequence_length]
+                  where True indicates attended tokens and False masked positions
 
         Returns:
             Tensor of shape [batch_size, seq_len, hidden_dim] after attention.
@@ -137,7 +139,8 @@ class SDPABidirectionalAttentionBlock(nn.Module):
 
         Args:
             x: Input tensor of shape [batch_size, seq_len, hidden_dim].
-            mask: Optional boolean mask where True indicates a masked position.
+            mask: Optional boolean mask of shape [batch_size, sequence_length]
+                  where True indicates attended tokens and False masked positions
 
         Returns:
             Tensor of shape [batch_size, seq_len, hidden_dim] after attention.
@@ -180,7 +183,8 @@ class SDPACausalAttentionBlock(nn.Module):
 
         Args:
             x: Input tensor of shape [batch_size, seq_len, hidden_dim].
-            mask: Optional boolean mask where True indicates a masked position.
+            mask: Optional boolean mask of shape [batch_size, sequence_length]
+                  where True indicates attended tokens and False masked positions
 
         Returns:
             Tensor of shape [batch_size, seq_len, hidden_dim] after attention.
