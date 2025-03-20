@@ -9,6 +9,7 @@ This repository is a companion to my *Create a Transformer From Scratch* series,
 1. Attention:
    - [Attention Mechanism](exercises/attention_mechanism/README.md)
    - [Attention Block](exercises/attention_block/README.md)
+2. [MLP Layers](exercises/mlp_layer/README.md)
 
 > **Note:** The reference implementations are generally available in `solution` folders, but you are strongly encouraged to implement the solutions yourself before looking at them. The learning happens in the struggle!
 
