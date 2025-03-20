@@ -1730,8 +1730,6 @@ gpu = [
     { name = "setuptools" },
     { name = "torch", version = "2.6.0+cu124", source = { registry = "https://download.pytorch.org/whl/cu124" } },
 ]
-
-[package.dev-dependencies]
 notebook = [
     { name = "ipykernel" },
     { name = "ipywidgets" },
@@ -1742,6 +1740,10 @@ notebook = [
 [package.metadata]
 requires-dist = [
     { name = "flash-attn", marker = "extra == 'flash'", specifier = ">=2.7.4" },
+    { name = "ipykernel", marker = "extra == 'notebook'", specifier = ">=6.29.5" },
+    { name = "ipywidgets", marker = "extra == 'notebook'", specifier = ">=8.1.5" },
+    { name = "jupyterlab", marker = "extra == 'notebook'", specifier = ">=4.3.5" },
+    { name = "nbclassic", marker = "extra == 'notebook'", specifier = ">=1.2.0" },
     { name = "numpy", specifier = ">=2.2.3" },
     { name = "packaging", marker = "extra == 'gpu'" },
     { name = "pytest", specifier = ">=7.2.1,<9" },
@@ -1750,15 +1752,7 @@ requires-dist = [
     { name = "torch", marker = "extra == 'cpu'", specifier = ">=2.5.1,<2.7", index = "https://download.pytorch.org/whl/cpu", conflict = { package = "transformer-from-scratch", extra = "cpu" } },
     { name = "torch", marker = "extra == 'gpu'", specifier = ">=2.5.1,<2.7", index = "https://download.pytorch.org/whl/cu124", conflict = { package = "transformer-from-scratch", extra = "gpu" } },
 ]
-provides-extras = ["gpu", "cpu", "flash"]
-
-[package.metadata.requires-dev]
-notebook = [
-    { name = "ipykernel", specifier = ">=6.29.5" },
-    { name = "ipywidgets", specifier = ">=8.1.5" },
-    { name = "jupyterlab", specifier = ">=4.3.5" },
-    { name = "nbclassic", specifier = ">=1.2.0" },
-]
+provides-extras = ["gpu", "cpu", "flash", "notebook"]
 
 [[package]]
 name = "triton"
