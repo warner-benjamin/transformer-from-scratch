@@ -119,8 +119,12 @@ def test_eager_causal_attention_block(with_mask):
         student_model = StudentEagerCausal(HIDDEN_DIM, NUM_HEADS, DROPOUT, MAX_SEQ_LEN).to(device)
         ref_model = RefEagerCausal(HIDDEN_DIM, NUM_HEADS, DROPOUT, MAX_SEQ_LEN).to(device)
 
-        # Copy weights from reference to student model to ensure identical initialization
-        student_model.load_state_dict(ref_model.state_dict())
+        # Copy weights from reference to student model to ensure identical initialization, but don't
+        # override student model causal mask.
+        ref_state_dict = ref_model.state_dict()
+        student_causal_mask = student_model.state_dict()['causal_mask']
+        ref_state_dict['causal_mask'] = student_causal_mask
+        student_model.load_state_dict(ref_state_dict)
 
         # Forward pass
         with torch.no_grad():
