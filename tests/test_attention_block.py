@@ -120,7 +120,9 @@ def test_eager_causal_attention_block(with_mask):
         ref_model = RefEagerCausal(HIDDEN_DIM, NUM_HEADS, DROPOUT, MAX_SEQ_LEN).to(device)
 
         # Copy weights from reference to student model to ensure identical initialization
-        student_model.load_state_dict(ref_model.state_dict())
+        incompatible_keys = student_model.load_state_dict(ref_model.state_dict(), strict=False)
+        if len(incompatible_keys.unexpected_keys) > 0:
+            pytest.fail(f"Missing keys in EagerCausalAttentionBlock: {incompatible_keys.unexpected_keys}")
 
         # Forward pass
         with torch.no_grad():
