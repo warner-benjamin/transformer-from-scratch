@@ -122,7 +122,11 @@ class EagerCausalAttentionBlock(nn.Module):
         self.dropout = nn.Dropout(dropout) if dropout > 0.0 else nn.Identity()
 
         # Causal mask (upper triangular), here true means mask out the position so we don't need to invert it
-        self.register_buffer("causal_mask", torch.triu(torch.ones(max_seq_len, max_seq_len, dtype=torch.bool), diagonal=1))
+        self.register_buffer(
+            "causal_mask",
+            torch.triu(torch.ones(max_seq_len, max_seq_len, dtype=torch.bool), diagonal=1),
+            persistent=False,
+        )
 
     def forward(self, x: Tensor, mask: BoolTensor | None = None) -> Tensor:
         """
